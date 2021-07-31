@@ -4,14 +4,14 @@
     use \Hcode\DB\Sql;
     use \Hcode\Mailer;
 
-    class Products extends Model
+    class Product extends Model
     {
 
         public static function listAll()
         {
             $sql = new Sql();
 
-            return $sql->select("SELECT * FROM tb_products ORDER BY tb_categories.idproduct DESC");
+            return $sql->select("SELECT * FROM tb_products ORDER BY tb_products.idproduct DESC");
         }
 
         public function save()
