@@ -40,7 +40,7 @@
             $sql = new Sql();
             
             $results = $sql->select("SELECT * FROM tb_products WHERE idproduct = :idproduct", array(
-                ":idcategory" => $idproduct
+                ":idproduct" => $idproduct
             ));
 
             $this->setData($results[0]);
@@ -53,6 +53,54 @@
             $sql->query("DELETE FROM tb_products WHERE idproduct = :idproduct", array(
                 ":idproduct" => $this->getidproduct()
             ));
+        }
+
+        public function getValues()
+        {
+            $this->checkPhoto();
+            $values = parent::getValues();
+
+
+            return $values;
+        }
+
+        public function checkPhoto()
+        {
+            if(file_exists($_SERVER["DOCUMENT_ROOT"]."/phpstore".DIRECTORY_SEPARATOR."res".DIRECTORY_SEPARATOR."site".DIRECTORY_SEPARATOR."img".DIRECTORY_SEPARATOR."products".DIRECTORY_SEPARATOR.$this->getidproduct().".jpg")){
+                $url = "/phpstore/res/site/img/products/".$this->getidproduct().".jpg";
+            } else {
+                $url = "/phpstore/res/site/img/Product.jpg";
+            }
+
+            return $this->setdesphoto($url);
+        }
+
+        public function setPhoto($file)
+        {
+            $extension = explode(".", $file["name"]);
+            $extension = end($extension);
+
+            switch ($extension) {
+                case 'jpg':
+                case 'jpeg':
+                    $image = imagecreatefromjpeg($file["tmp_name"]);
+                break;
+                    
+                case 'gif':
+                    $image = imagecreatefromgif($file["tmp_name"]);
+                break;
+
+                case 'png':
+                    $image = imagecreatefrompng($file["tmp_name"]);
+                break;
+            }
+
+            $destiny = $_SERVER["DOCUMENT_ROOT"]."/phpstore".DIRECTORY_SEPARATOR."res".DIRECTORY_SEPARATOR."site".DIRECTORY_SEPARATOR."img".DIRECTORY_SEPARATOR."products".DIRECTORY_SEPARATOR.$this->getidproduct().".jpg";
+            imagejpeg($image, $destiny);
+
+            imagedestroy($image);
+
+            $this->checkPhoto();
         }
     }
 ?>
