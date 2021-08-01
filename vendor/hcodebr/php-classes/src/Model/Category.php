@@ -61,7 +61,7 @@
             }
 
             $s = DIRECTORY_SEPARATOR;
-            file_put_contents($_SERVER['DOCUMENT_ROOT'].$s."ecommerce".$s."views".$s."categories-menu.html", implode('', $html));
+            file_put_contents($_SERVER['DOCUMENT_ROOT'].$s."phpstore".$s."views".$s."categories-menu.html", implode('', $html));
         }
 
         public function getProducts($related = true)

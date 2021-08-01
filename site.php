@@ -21,6 +21,6 @@ $app->get("/categories/:idcategory", function ($idcategory) {
 
     $page->setTpl("category", array(
         "category" => $category->getValues(),
-        "products" => array()
+        "products" => Hcode\Model\Product::checkList($category->getProducts())
     ));
 });
