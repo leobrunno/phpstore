@@ -74,15 +74,52 @@ $app->post("/admin/categories/:idcategory", function ($idcategory) {
     exit();
 });
 
-$app->get("/categories/:idcategory", function ($idcategory) {
+$app->get("/admin/categories/:idcategory/products", function ($idcategory){
+    User::verifyLogin();
+
     $category = new Category();
 
     $category->get((int)$idcategory);
 
-    $page = new Hcode\Page();
+    $page = new Hcode\PageAdmin();
 
-    $page->setTpl("category", array(
+    $page->setTpl("categories-products", array(
         "category" => $category->getValues(),
-        "products" => array()
+        "productsRelated" => $category->getProducts(),
+        "productsNotRelated" => $category->getProducts(false)
     ));
+});
+
+$app->get("/admin/categories/:idcategory/products/:idproduct/add", function ($idcategory, $idproduct){
+    User::verifyLogin();
+
+    $category = new Category();
+
+    $category->get((int)$idcategory);
+
+    $product = new Hcode\Model\Product();
+
+    $product->get((int)$idproduct);
+
+    $category->addproduct($product);
+
+    header("Location: /phpstore/admin/categories/".$idcategory."/products");
+    exit();
+});
+
+$app->get("/admin/categories/:idcategory/products/:idproduct/remove", function ($idcategory, $idproduct){
+    User::verifyLogin();
+
+    $category = new Category();
+
+    $category->get((int)$idcategory);
+
+    $product = new Hcode\Model\Product();
+
+    $product->get((int)$idproduct);
+
+    $category->removeproduct($product);
+
+    header("Location: /phpstore/admin/categories/".$idcategory."/products");
+    exit();
 });
