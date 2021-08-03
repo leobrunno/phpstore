@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 03-Ago-2021 às 03:06
+-- Tempo de geração: 03-Ago-2021 às 03:23
 -- Versão do servidor: 10.4.14-MariaDB
 -- versão do PHP: 7.4.10
 
@@ -25,6 +25,32 @@ DELIMITER $$
 --
 -- Procedimentos
 --
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_carts_save` (`pidcart` INT, `pdessessionid` VARCHAR(64), `piduser` INT, `pdeszipcode` CHAR(8), `pvlfreight` DECIMAL(10,2), `pnrdays` INT)  BEGIN
+
+    IF pidcart > 0 THEN
+        
+        UPDATE tb_carts
+        SET
+            dessessionid = pdessessionid,
+            iduser = piduser,
+            deszipcode = pdeszipcode,
+            vlfreight = pvlfreight,
+            nrdays = pnrdays
+        WHERE idcart = pidcart;
+        
+    ELSE
+        
+        INSERT INTO tb_carts (dessessionid, iduser, deszipcode, vlfreight, nrdays)
+        VALUES(pdessessionid, piduser, pdeszipcode, pvlfreight, pnrdays);
+        
+        SET pidcart = LAST_INSERT_ID();
+        
+    END IF;
+    
+    SELECT * FROM tb_carts WHERE idcart = pidcart;
+
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_categories_save` (`pidcategory` INT, `pdescategory` VARCHAR(64))  BEGIN
 	
 	IF pidcategory > 0 THEN
@@ -168,8 +194,9 @@ CREATE TABLE `tb_carts` (
   `idcart` int(11) NOT NULL,
   `dessessionid` varchar(64) NOT NULL,
   `iduser` int(11) DEFAULT NULL,
-  `idaddress` int(11) DEFAULT NULL,
+  `deszipcode` char(8) DEFAULT NULL,
   `vlfreight` decimal(10,2) DEFAULT NULL,
+  `nrdays` int(11) DEFAULT NULL,
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -421,8 +448,7 @@ ALTER TABLE `tb_addresses`
 --
 ALTER TABLE `tb_carts`
   ADD PRIMARY KEY (`idcart`),
-  ADD KEY `FK_carts_users_idx` (`iduser`),
-  ADD KEY `fk_carts_addresses_idx` (`idaddress`);
+  ADD KEY `FK_carts_users_idx` (`iduser`);
 
 --
 -- Índices para tabela `tb_cartsproducts`
@@ -504,6 +530,12 @@ ALTER TABLE `tb_addresses`
   MODIFY `idaddress` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de tabela `tb_carts`
+--
+ALTER TABLE `tb_carts`
+  MODIFY `idcart` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de tabela `tb_cartsproducts`
 --
 ALTER TABLE `tb_cartsproducts`
@@ -571,7 +603,6 @@ ALTER TABLE `tb_addresses`
 -- Limitadores para a tabela `tb_carts`
 --
 ALTER TABLE `tb_carts`
-  ADD CONSTRAINT `fk_carts_addresses` FOREIGN KEY (`idaddress`) REFERENCES `tb_addresses` (`idaddress`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_carts_users` FOREIGN KEY (`iduser`) REFERENCES `tb_users` (`iduser`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --

@@ -52,3 +52,9 @@ $app->get("/products/:desurl", function($desurl){
         "categories" => $product->getCategories()
     ));
 });
+
+$app->get("/cart", function(){
+    $page = new Hcode\Page();
+
+    $page->setTpl("cart");
+});
