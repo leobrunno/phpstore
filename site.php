@@ -38,3 +38,17 @@ $app->get("/categories/:idcategory", function ($idcategory) {
         "pages" => $pages
     ));
 });
+
+$app->get("/products/:desurl", function($desurl){
+
+    $product = new Hcode\Model\Product();
+
+    $product->getFromUrl($desurl);
+
+    $page = new Hcode\Page();
+
+    $page->setTpl("product-detail", array(
+        "product" => $product->getValues(),
+        "categories" => $product->getCategories()
+    ));
+});

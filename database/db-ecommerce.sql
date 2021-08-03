@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 31-Jul-2021 às 03:05
+-- Tempo de geração: 03-Ago-2021 às 03:06
 -- Versão do servidor: 10.4.14-MariaDB
 -- versão do PHP: 7.4.10
 
@@ -42,6 +42,34 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_categories_save` (`pidcategory` 
     END IF;
     
     SELECT * FROM tb_categories WHERE idcategory = pidcategory;
+    
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_products_save` (`pidproduct` INT(11), `pdesproduct` VARCHAR(64), `pvlprice` DECIMAL(10,2), `pvlwidth` DECIMAL(10,2), `pvlheight` DECIMAL(10,2), `pvllength` DECIMAL(10,2), `pvlweight` DECIMAL(10,2), `pdesurl` VARCHAR(128))  BEGIN
+	
+	IF pidproduct > 0 THEN
+		
+		UPDATE tb_products
+        SET 
+			desproduct = pdesproduct,
+            vlprice = pvlprice,
+            vlwidth = pvlwidth,
+            vlheight = pvlheight,
+            vllength = pvllength,
+            vlweight = pvlweight,
+            desurl = pdesurl
+        WHERE idproduct = pidproduct;
+        
+    ELSE
+		
+		INSERT INTO tb_products (desproduct, vlprice, vlwidth, vlheight, vllength, vlweight, desurl) 
+        VALUES(pdesproduct, pvlprice, pvlwidth, pvlheight, pvllength, pvlweight, pdesurl);
+        
+        SET pidproduct = LAST_INSERT_ID();
+        
+    END IF;
+    
+    SELECT * FROM tb_products WHERE idproduct = pidproduct;
     
 END$$
 
@@ -180,7 +208,8 @@ INSERT INTO `tb_categories` (`idcategory`, `descategory`, `dtregister`) VALUES
 (4, 'Samsung', '2021-07-30 01:36:11'),
 (5, 'Apple', '2021-07-30 01:36:18'),
 (6, 'Xiaomi', '2021-07-30 01:36:30'),
-(7, 'Nokia', '2021-07-31 01:00:11');
+(7, 'Nokia', '2021-07-31 01:00:11'),
+(8, 'Android', '2021-08-01 03:20:59');
 
 -- --------------------------------------------------------
 
@@ -269,8 +298,13 @@ CREATE TABLE `tb_products` (
 
 INSERT INTO `tb_products` (`idproduct`, `desproduct`, `vlprice`, `vlwidth`, `vlheight`, `vllength`, `vlweight`, `desurl`, `dtregister`) VALUES
 (1, 'Smartphone Android 7.0', '999.95', '75.00', '151.00', '80.00', '167.00', 'smartphone-android-7.0', '2017-03-13 06:00:00'),
-(2, 'SmartTV LED 4K', '3925.99', '917.00', '596.00', '288.00', '8600.00', 'smarttv-led-4k', '2017-03-13 06:00:00'),
-(3, 'Notebook 14\" 4GB 1TB', '1949.99', '345.00', '23.00', '30.00', '2000.00', 'notebook-14-4gb-1tb', '2017-03-13 06:00:00');
+(3, 'Notebook 14\" 4GB 1TB', '1949.99', '345.00', '23.00', '30.00', '2000.00', 'notebook-14-4gb-1tb', '2017-03-13 06:00:00'),
+(4, 'Apple iPad 8ª Geração 10.2\", Wi-Fi, 128GB Space Gray - A2270', '3498.00', '26.20', '18.60', '5.40', '0.49', 'ipad-8-128gb', '2021-07-31 02:31:45'),
+(5, 'Smartphone Motorola Moto G5 Plus', '1135.23', '15.20', '7.40', '0.70', '0.16', 'smartphone-motorola-moto-g5-plus', '2021-08-01 01:20:59'),
+(6, 'Smartphone Moto Z Play', '1887.78', '14.10', '0.90', '1.16', '0.13', 'smartphone-moto-z-play', '2021-08-01 01:20:59'),
+(7, 'Smartphone Samsung Galaxy J5 Pro', '1299.00', '14.60', '7.10', '0.80', '0.16', 'smartphone-samsung-galaxy-j5', '2021-08-01 01:20:59'),
+(8, 'Smartphone Samsung Galaxy J7 Prime', '1149.00', '15.10', '7.50', '0.80', '0.16', 'smartphone-samsung-galaxy-j7', '2021-08-01 01:20:59'),
+(9, 'Smartphone Samsung Galaxy J3 Dual', '679.90', '14.20', '7.10', '0.70', '0.14', 'smartphone-samsung-galaxy-j3', '2021-08-01 01:20:59');
 
 -- --------------------------------------------------------
 
@@ -282,6 +316,20 @@ CREATE TABLE `tb_productscategories` (
   `idcategory` int(11) NOT NULL,
   `idproduct` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Extraindo dados da tabela `tb_productscategories`
+--
+
+INSERT INTO `tb_productscategories` (`idcategory`, `idproduct`) VALUES
+(1, 5),
+(5, 4),
+(8, 1),
+(8, 5),
+(8, 6),
+(8, 7),
+(8, 8),
+(8, 9);
 
 -- --------------------------------------------------------
 
@@ -465,7 +513,7 @@ ALTER TABLE `tb_cartsproducts`
 -- AUTO_INCREMENT de tabela `tb_categories`
 --
 ALTER TABLE `tb_categories`
-  MODIFY `idcategory` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `idcategory` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de tabela `tb_orders`
@@ -489,7 +537,7 @@ ALTER TABLE `tb_persons`
 -- AUTO_INCREMENT de tabela `tb_products`
 --
 ALTER TABLE `tb_products`
-  MODIFY `idproduct` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idproduct` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de tabela `tb_users`
