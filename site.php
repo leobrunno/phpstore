@@ -54,6 +54,10 @@ $app->get("/products/:desurl", function($desurl){
 });
 
 $app->get("/cart", function(){
+
+    $cart = new Hcode\Model\Cart();
+    $cart->getFromSession();
+
     $page = new Hcode\Page();
 
     $page->setTpl("cart");
