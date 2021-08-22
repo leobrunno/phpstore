@@ -57,8 +57,46 @@ $app->get("/cart", function(){
 
     $cart = new Hcode\Model\Cart();
     $cart->getFromSession();
-
     $page = new Hcode\Page();
 
     $page->setTpl("cart");
+});
+
+$app->get("/cart/:idproduct/add", function($idproduct){
+    $product = new Hcode\Model\Product();
+
+    $product->get((int)$idproduct);
+
+    $cart = Hcode\Model\Cart::getFromSession();
+
+    $cart->addProduct($product);
+
+    header("Location: /phpstore/cart");
+    exit();
+});
+
+$app->get("/cart/:idproduct/minus", function($idproduct){
+    $product = new Hcode\Model\Product();
+
+    $product->get((int)$idproduct);
+
+    $cart = Hcode\Model\Cart::getFromSession();
+
+    $cart->removeProduct($product);
+
+    header("Location: /phpstore/cart");
+    exit();
+});
+
+$app->get("/cart/:idproduct/remove", function($idproduct){
+    $product = new Hcode\Model\Product();
+
+    $product->get((int)$idproduct);
+
+    $cart = Hcode\Model\Cart::getFromSession();
+
+    $cart->removeProduct($product, true);
+
+    header("Location: /phpstore/cart");
+    exit();
 });

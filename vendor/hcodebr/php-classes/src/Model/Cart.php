@@ -89,8 +89,37 @@ class Cart extends Model{
             ':vlfreight' => $this->getvlfreight(),
             ':nrdays' => $this->getnrdays(),
         ));
-        
+
         $this->setData($results[0]);
     }
 
+    public function addProduct(Product $product)
+    {
+        $sql = new Sql();
+
+        $sql->query("INSERT INTO tb_cartsproducts (idcart, idproduct) VALUES (:idcart, :idproduct)", array(
+            ":idcart" => $this->getidcart(),
+            ":idproduct" => $product->getidproduct()
+        ));
+    }
+
+    public function removeProduct(Product $product, $all = false)
+    {
+        $sql = new Sql();
+
+        if($all){
+
+            $sql->query("UPDATE tb_cartsproducts SET dtremoved = NOW() WHERE idcart = :idcart AND idproduct = :idproduct AND dtremoved is NULL", array(
+                ":idcart" => $this->getidcart(),
+                ":idproduct" => $product->getidproduct()
+            ));
+        } else {
+
+            $sql->query("UPDATE tb_cartsproducts SET dtremoved = NOW() WHERE idcart = :idcart AND idproduct = :idproduct AND dtremoved is NULL LIMIT 1", array(
+                ":idcart" => $this->getidcart(),
+                ":idproduct" => $product->getidproduct()
+            ));
+
+        }
+    }
 }
