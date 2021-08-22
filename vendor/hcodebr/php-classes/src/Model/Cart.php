@@ -54,8 +54,8 @@ class Cart extends Model{
     {
         $sql = new Sql();
 
-        $results = $sql->select("SELECT * FROM tb_carts WHERE dessionid = :dessionid", array(
-            ":dessionid" => session_id()
+        $results = $sql->select("SELECT * FROM tb_carts WHERE dessessionid = :dessessionid", array(
+            ":dessessionid" => session_id()
         ));
 
         if(count($results) > 0) {
@@ -81,7 +81,7 @@ class Cart extends Model{
     {
         $sql = new Sql();
 
-        $results = $sql->select("CALL sp_carts_save(:idcart, :dessessionid, :iduser, :deszipcode, :vlfreight, :nrdays", array(
+        $results = $sql->select("CALL sp_carts_save(:idcart, :dessessionid, :iduser, :deszipcode, :vlfreight, :nrdays)", array(
             ':idcart' => $this->getidcart(),
             ':dessessionid' => $this->getdessessionid(),
             ':iduser' => $this->getiduser(),
@@ -89,7 +89,7 @@ class Cart extends Model{
             ':vlfreight' => $this->getvlfreight(),
             ':nrdays' => $this->getnrdays(),
         ));
-
+        
         $this->setData($results[0]);
     }
 
