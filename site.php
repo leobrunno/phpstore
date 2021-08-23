@@ -55,11 +55,14 @@ $app->get("/products/:desurl", function($desurl){
 
 $app->get("/cart", function(){
 
-    $cart = new Hcode\Model\Cart();
-    $cart->getFromSession();
+    $cart = Hcode\Model\Cart::getFromSession();
+    
     $page = new Hcode\Page();
 
-    $page->setTpl("cart");
+    $page->setTpl("cart", array(
+        "cart" => $cart->getValues(),
+        "products" => $cart->getProducts()
+    ));
 });
 
 $app->get("/cart/:idproduct/add", function($idproduct){
@@ -69,7 +72,11 @@ $app->get("/cart/:idproduct/add", function($idproduct){
 
     $cart = Hcode\Model\Cart::getFromSession();
 
-    $cart->addProduct($product);
+    $qtd = (isset($_GET["qtd"])) ? (int)$_GET["qtd"] : 1;
+
+    for ($i=0; $i < $qtd; $i++) { 
+        $cart->addProduct($product);
+    }
 
     header("Location: /phpstore/cart");
     exit();
