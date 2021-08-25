@@ -61,7 +61,8 @@ $app->get("/cart", function(){
 
     $page->setTpl("cart", array(
         "cart" => $cart->getValues(),
-        "products" => $cart->getProducts()
+        "products" => $cart->getProducts(),
+        "error" => Hcode\Model\Cart::getMsgError()
     ));
 });
 
@@ -103,6 +104,16 @@ $app->get("/cart/:idproduct/remove", function($idproduct){
     $cart = Hcode\Model\Cart::getFromSession();
 
     $cart->removeProduct($product, true);
+
+    header("Location: /phpstore/cart");
+    exit();
+});
+
+$app->post("/cart/freight", function(){
+
+    $cart = Hcode\Model\Cart::getFromSession();
+
+    $cart->setFreight($_POST['zipcode']);
 
     header("Location: /phpstore/cart");
     exit();
