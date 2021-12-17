@@ -118,3 +118,51 @@ $app->post("/cart/freight", function(){
     header("Location: /phpstore/cart");
     exit();
 });
+
+$app->get("/checkout", function(){
+
+    Hcode\Model\User::verifyLogin(false);
+
+    $cart = Hcode\Model\Cart::getFromSession();
+
+    $address = new Hcode\Model\Address();
+
+    $page = new Hcode\Page();
+
+    $page->setTpl("checkout", array(
+        "cart" => $cart->getValues(),
+        "address" => $address->getValues()
+    ));
+});
+
+$app->get("/login", function(){
+
+    $page = new Hcode\Page();
+
+    $page->setTpl("login", array(
+        "error" => Hcode\Model\User::getError()
+    ));
+});
+
+$app->post("/login", function(){
+
+    try{
+
+        Hcode\Model\User::login($_POST['login'], $_POST['password']);
+
+    } catch(Exception $e){
+
+        Hcode\Model\User::setError($e->getMessage());
+    }
+
+    header("Location: /phpstore/checkout");
+    exit();
+});
+
+$app->get("/logout", function(){
+
+    \Hcode\Model\User::logout();
+
+    header("Location: /phpstore/login");
+    exit();
+});
