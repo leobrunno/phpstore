@@ -140,7 +140,9 @@ $app->get("/login", function(){
     $page = new Hcode\Page();
 
     $page->setTpl("login", array(
-        "error" => Hcode\Model\User::getError()
+        "error" => Hcode\Model\User::getError(),
+        "errorRegister" => Hcode\Model\User::getErrorRegister(),
+        "registerValues" => (isset($_SESSION['registerValues'])) ? $_SESSION['registerValues'] : array("name" => "", "email" => "", "phone" => "")
     ));
 });
 
@@ -164,5 +166,56 @@ $app->get("/logout", function(){
     \Hcode\Model\User::logout();
 
     header("Location: /phpstore/login");
+    exit();
+});
+
+$app->post("/register", function(){
+
+    $user = new \Hcode\Model\User();
+
+    $_SESSION['registerValues'] = $_POST;
+
+    if(!isset($_POST['name']) || (empty($_POST['name']))){
+
+        \Hcode\Model\User::setErrorRegister("Preencha seu nome!");
+        header("Location: /phpstore/login");
+        exit();
+    }
+
+    if(!isset($_POST['email']) || (empty($_POST['email']))){
+
+        \Hcode\Model\User::setErrorRegister("Preencha seu email!");
+        header("Location: /phpstore/login");
+        exit();
+    }
+
+    if(!isset($_POST['password']) || (empty($_POST['password']))){
+
+        \Hcode\Model\User::setErrorRegister("Preencha a senha!");
+        header("Location: /phpstore/login");
+        exit();
+    }
+
+    if(\Hcode\Model\User::checkLoginExists($_POST['email']) === true){
+
+        \Hcode\Model\User::setErrorRegister("Este endereço de email já foi cadastrado!");
+        header("Location: /phpstore/login");
+        exit();
+    }
+
+    $user->setData(array(
+        "inadmin" => 0,
+        "deslogin" => $_POST['email'],
+        "desperson" => $_POST['name'],
+        "desemail" => $_POST['email'],
+        "despassword" => $_POST['password'],
+        "nrphone" => $_POST['phone']
+    ));
+
+    $user->save();
+
+    \Hcode\Model\User::login($_POST['email'], $_POST['password']);
+
+    header("Location: /phpstore/checkout");
     exit();
 });
