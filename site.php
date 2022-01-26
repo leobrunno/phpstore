@@ -219,3 +219,51 @@ $app->post("/register", function(){
     header("Location: /phpstore/checkout");
     exit();
 });
+
+$app->get("/forgot", function () {
+    $page = new Hcode\Page();
+
+    $page->setTpl("forgot");
+});
+
+$app->post("/forgot", function () {
+
+    $user = \Hcode\Model\User::getForgot($_POST["email"], false);
+
+    header("Location: /phpstore/forgot/sent");
+    exit();
+});
+
+$app->get("/forgot/sent", function () {
+    $page = new Hcode\Page();
+
+    $page->setTpl("forgot-sent");
+});
+
+$app->get("/forgot/reset", function () {
+    $user = \Hcode\Model\User::validForgotDecrypt($_GET["code"]);
+
+    $page = new Hcode\Page();
+
+    $page->setTpl("forgot-reset", array(
+        "name" => $user["desperson"],
+        "code" => $_GET["code"]
+    ));
+});
+
+$app->post("/forgot/reset", function () {
+    $forgot = \Hcode\Model\User::validForgotDecrypt($_POST["code"]);
+
+    \Hcode\Model\User::setForgotUsed($forgot["idrecovery"]);
+
+    $user = new \Hcode\Model\User();
+    $user->get((int)$forgot["iduser"]);
+
+    $password = password_hash($_POST["password"], PASSWORD_DEFAULT, ["cost" => 12]);
+
+    $user->setPassword($password);
+
+    $page = new Hcode\Page();
+
+    $page->setTpl("forgot-reset-success");
+});
