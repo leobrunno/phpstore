@@ -252,6 +252,7 @@ $app->get("/forgot/reset", function () {
 });
 
 $app->post("/forgot/reset", function () {
+    
     $forgot = \Hcode\Model\User::validForgotDecrypt($_POST["code"]);
 
     \Hcode\Model\User::setForgotUsed($forgot["idrecovery"]);
@@ -266,4 +267,67 @@ $app->post("/forgot/reset", function () {
     $page = new Hcode\Page();
 
     $page->setTpl("forgot-reset-success");
+});
+
+$app->get("/profile", function(){
+
+    Hcode\Model\User::verifyLogin(false);
+
+    $user = Hcode\Model\User::getFromSession();
+
+    $page = new Hcode\Page();
+
+    $page->setTpl("profile", array(
+        "user" => $user->getValues(),
+        "profileMsg" => Hcode\Model\User::getSuccess(),
+        "profileError" => Hcode\Model\User::getError()
+    ));
+});
+
+$app->post("/profile", function(){
+
+    Hcode\Model\User::verifyLogin(false);
+
+    if(!isset($_POST['desperson']) || empty($_POST['desperson'])){
+
+        \Hcode\Model\User::setError("Preencha seu nome!");
+
+        header("Location: /phpstore/profile");
+        exit();
+
+    }
+
+    if(!isset($_POST['desemail']) || empty($_POST['desemail'])){
+
+        \Hcode\Model\User::setError("Preencha seu email!");
+
+        header("Location: /phpstore/profile");
+        exit();
+    }
+    
+    $user = Hcode\Model\User::getFromSession();
+
+    if($_POST['desemail'] !== $user->getdesemail()){
+
+        if(\Hcode\Model\User::checkLoginExists($_POST['email']) === true){
+
+            \Hcode\Model\User::setError("Este endereço de email já está cadastrado");
+            header("Location: /phpstore/profile");
+            exit();
+        }
+    }
+
+
+    $_POST['indamin'] = $user->getinadmin();
+    $_POST['despassword'] = $user->getdespassword();
+    $_POST['deslogin'] = $_POST['desemail'];
+
+    $user->setData($_POST);
+
+    $user->update();
+
+    Hcode\Model\User::setSuccess("Dados atualizados com sucesso!");
+
+    header("Location: /phpstore/profile");
+    exit();
 });
