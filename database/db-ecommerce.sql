@@ -3,7 +3,6 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 03-Ago-2021 às 03:23
 -- Versão do servidor: 10.4.14-MariaDB
 -- versão do PHP: 7.4.10
 
@@ -25,6 +24,35 @@ DELIMITER $$
 --
 -- Procedimentos
 --
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_addresses_save` (`pidaddress` INT(11), `pidperson` INT(11), `pdesaddress` VARCHAR(128), `pdescomplement` VARCHAR(32), `pdescity` VARCHAR(32), `pdesstate` VARCHAR(32), `pdescountry` VARCHAR(32), `pdeszipcode` CHAR(8), `pdesdistrict` VARCHAR(32))  BEGIN
+
+	IF pidaddress > 0 THEN
+		
+		UPDATE tb_addresses
+        SET
+			idperson = pidperson,
+            desaddress = pdesaddress,
+            descomplement = pdescomplement,
+            descity = pdescity,
+            desstate = pdesstate,
+            descountry = pdescountry,
+            deszipcode = pdeszipcode, 
+            desdistrict = pdesdistrict
+		WHERE idaddress = pidaddress;
+        
+    ELSE
+		
+		INSERT INTO tb_addresses (idperson, desaddress, descomplement, descity, desstate, descountry, deszipcode, desdistrict)
+        VALUES(pidperson, pdesaddress, pdescomplement, pdescity, pdesstate, pdescountry, pdeszipcode, pdesdistrict);
+        
+        SET pidaddress = LAST_INSERT_ID();
+        
+    END IF;
+    
+    SELECT * FROM tb_addresses WHERE idaddress = pidaddress;
+
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_carts_save` (`pidcart` INT, `pdessessionid` VARCHAR(64), `piduser` INT, `pdeszipcode` CHAR(8), `pvlfreight` DECIMAL(10,2), `pnrdays` INT)  BEGIN
 
     IF pidcart > 0 THEN
@@ -180,7 +208,8 @@ CREATE TABLE `tb_addresses` (
   `descity` varchar(32) NOT NULL,
   `desstate` varchar(32) NOT NULL,
   `descountry` varchar(32) NOT NULL,
-  `nrzipcode` int(11) NOT NULL,
+  `deszipcode` char(8) NOT NULL,
+  `desdistrict` varchar(32) NOT NULL,
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -200,8 +229,6 @@ CREATE TABLE `tb_carts` (
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- --------------------------------------------------------
-
 --
 -- Estrutura da tabela `tb_cartsproducts`
 --
@@ -210,11 +237,9 @@ CREATE TABLE `tb_cartsproducts` (
   `idcartproduct` int(11) NOT NULL,
   `idcart` int(11) NOT NULL,
   `idproduct` int(11) NOT NULL,
-  `dtremoved` datetime NOT NULL,
+  `dtremoved` datetime DEFAULT NULL,
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
 
 --
 -- Estrutura da tabela `tb_categories`
@@ -225,20 +250,6 @@ CREATE TABLE `tb_categories` (
   `descategory` varchar(32) NOT NULL,
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Extraindo dados da tabela `tb_categories`
---
-
-INSERT INTO `tb_categories` (`idcategory`, `descategory`, `dtregister`) VALUES
-(1, 'Smartphones', '2021-07-30 01:10:14'),
-(4, 'Samsung', '2021-07-30 01:36:11'),
-(5, 'Apple', '2021-07-30 01:36:18'),
-(6, 'Xiaomi', '2021-07-30 01:36:30'),
-(7, 'Nokia', '2021-07-31 01:00:11'),
-(8, 'Android', '2021-08-01 03:20:59');
-
--- --------------------------------------------------------
 
 --
 -- Estrutura da tabela `tb_orders`
@@ -290,20 +301,6 @@ CREATE TABLE `tb_persons` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Extraindo dados da tabela `tb_persons`
---
-
-INSERT INTO `tb_persons` (`idperson`, `desperson`, `desemail`, `nrphone`, `dtregister`) VALUES
-(1, 'João Rangel', 'admin@hcode.com.br', 2147483647, '2017-03-01 06:00:00'),
-(7, 'Suporte', 'suporte@hcode.com.br', 1112345678, '2017-03-15 19:10:27'),
-(8, 'Leonardo Brunno', 'leobrunno@email.com', 84999999999, '2021-07-26 00:13:56'),
-(9, 'Leonardo Brunno', 'leobrunno@email.com', 84999999999, '2021-07-26 00:14:23'),
-(12, 'Leonardo Brunno Silva De Lima', 'leobrunno@live.com', 84999999999, '2021-07-27 01:44:39'),
-(14, 'Joaquim', 'joaquim@email.com', 84999999999, '2021-07-31 00:59:38');
-
--- --------------------------------------------------------
-
---
 -- Estrutura da tabela `tb_products`
 --
 
@@ -320,22 +317,6 @@ CREATE TABLE `tb_products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Extraindo dados da tabela `tb_products`
---
-
-INSERT INTO `tb_products` (`idproduct`, `desproduct`, `vlprice`, `vlwidth`, `vlheight`, `vllength`, `vlweight`, `desurl`, `dtregister`) VALUES
-(1, 'Smartphone Android 7.0', '999.95', '75.00', '151.00', '80.00', '167.00', 'smartphone-android-7.0', '2017-03-13 06:00:00'),
-(3, 'Notebook 14\" 4GB 1TB', '1949.99', '345.00', '23.00', '30.00', '2000.00', 'notebook-14-4gb-1tb', '2017-03-13 06:00:00'),
-(4, 'Apple iPad 8ª Geração 10.2\", Wi-Fi, 128GB Space Gray - A2270', '3498.00', '26.20', '18.60', '5.40', '0.49', 'ipad-8-128gb', '2021-07-31 02:31:45'),
-(5, 'Smartphone Motorola Moto G5 Plus', '1135.23', '15.20', '7.40', '0.70', '0.16', 'smartphone-motorola-moto-g5-plus', '2021-08-01 01:20:59'),
-(6, 'Smartphone Moto Z Play', '1887.78', '14.10', '0.90', '1.16', '0.13', 'smartphone-moto-z-play', '2021-08-01 01:20:59'),
-(7, 'Smartphone Samsung Galaxy J5 Pro', '1299.00', '14.60', '7.10', '0.80', '0.16', 'smartphone-samsung-galaxy-j5', '2021-08-01 01:20:59'),
-(8, 'Smartphone Samsung Galaxy J7 Prime', '1149.00', '15.10', '7.50', '0.80', '0.16', 'smartphone-samsung-galaxy-j7', '2021-08-01 01:20:59'),
-(9, 'Smartphone Samsung Galaxy J3 Dual', '679.90', '14.20', '7.10', '0.70', '0.14', 'smartphone-samsung-galaxy-j3', '2021-08-01 01:20:59');
-
--- --------------------------------------------------------
-
---
 -- Estrutura da tabela `tb_productscategories`
 --
 
@@ -343,22 +324,6 @@ CREATE TABLE `tb_productscategories` (
   `idcategory` int(11) NOT NULL,
   `idproduct` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Extraindo dados da tabela `tb_productscategories`
---
-
-INSERT INTO `tb_productscategories` (`idcategory`, `idproduct`) VALUES
-(1, 5),
-(5, 4),
-(8, 1),
-(8, 5),
-(8, 6),
-(8, 7),
-(8, 8),
-(8, 9);
-
--- --------------------------------------------------------
 
 --
 -- Estrutura da tabela `tb_users`
@@ -372,20 +337,6 @@ CREATE TABLE `tb_users` (
   `inadmin` tinyint(4) NOT NULL DEFAULT 0,
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Extraindo dados da tabela `tb_users`
---
-
-INSERT INTO `tb_users` (`iduser`, `idperson`, `deslogin`, `despassword`, `inadmin`, `dtregister`) VALUES
-(1, 1, 'admin', '$2y$12$YlooCyNvyTji8bPRcrfNfOKnVMmZA9ViM2A3IpFjmrpIbp5ovNmga', 1, '2017-03-13 06:00:00'),
-(7, 7, 'suporte', '$2y$12$HFjgUm/mk1RzTy4ZkJaZBe0Mc/BA2hQyoUckvm.lFa6TesjtNpiMe', 1, '2017-03-15 19:10:27'),
-(8, 8, 'leobrunno', '123456', 1, '2021-07-26 00:13:56'),
-(9, 9, 'leobrunno', '123456', 1, '2021-07-26 00:14:23'),
-(12, 12, 'leobrunno27', '$2y$12$A.QrCpSaPK8Vd0arpInolucA4F.5u7Jt6lL3JuNpQQCecQzP3rfvO', 1, '2021-07-27 01:44:39'),
-(14, 14, 'joca', '123456', 1, '2021-07-31 00:59:38');
-
--- --------------------------------------------------------
 
 --
 -- Estrutura da tabela `tb_userslogs`
@@ -415,22 +366,6 @@ CREATE TABLE `tb_userspasswordsrecoveries` (
   `dtrecovery` datetime DEFAULT NULL,
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Extraindo dados da tabela `tb_userspasswordsrecoveries`
---
-
-INSERT INTO `tb_userspasswordsrecoveries` (`idrecovery`, `iduser`, `desip`, `dtrecovery`, `dtregister`) VALUES
-(1, 7, '127.0.0.1', NULL, '2017-03-15 19:10:59'),
-(2, 7, '127.0.0.1', '2017-03-15 13:33:45', '2017-03-15 19:11:18'),
-(3, 7, '127.0.0.1', '2017-03-15 13:37:35', '2017-03-15 19:37:12'),
-(4, 12, '::1', NULL, '2021-07-27 01:46:24'),
-(5, 12, '::1', NULL, '2021-07-27 01:48:20'),
-(6, 12, '::1', NULL, '2021-07-27 01:52:40'),
-(7, 12, '::1', NULL, '2021-07-27 01:59:46'),
-(8, 12, '::1', NULL, '2021-07-27 02:01:49'),
-(9, 12, '::1', '2021-07-27 22:59:21', '2021-07-28 02:07:39'),
-(10, 12, '::1', '2021-07-27 22:45:01', '2021-07-28 02:09:26');
 
 --
 -- Índices para tabelas despejadas
@@ -533,13 +468,13 @@ ALTER TABLE `tb_addresses`
 -- AUTO_INCREMENT de tabela `tb_carts`
 --
 ALTER TABLE `tb_carts`
-  MODIFY `idcart` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `idcart` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=138;
 
 --
 -- AUTO_INCREMENT de tabela `tb_cartsproducts`
 --
 ALTER TABLE `tb_cartsproducts`
-  MODIFY `idcartproduct` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `idcartproduct` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT de tabela `tb_categories`
@@ -563,7 +498,7 @@ ALTER TABLE `tb_ordersstatus`
 -- AUTO_INCREMENT de tabela `tb_persons`
 --
 ALTER TABLE `tb_persons`
-  MODIFY `idperson` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `idperson` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de tabela `tb_products`
@@ -575,7 +510,7 @@ ALTER TABLE `tb_products`
 -- AUTO_INCREMENT de tabela `tb_users`
 --
 ALTER TABLE `tb_users`
-  MODIFY `iduser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `iduser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de tabela `tb_userslogs`
@@ -587,7 +522,7 @@ ALTER TABLE `tb_userslogs`
 -- AUTO_INCREMENT de tabela `tb_userspasswordsrecoveries`
 --
 ALTER TABLE `tb_userspasswordsrecoveries`
-  MODIFY `idrecovery` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `idrecovery` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Restrições para despejos de tabelas

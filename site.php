@@ -123,16 +123,106 @@ $app->get("/checkout", function(){
 
     Hcode\Model\User::verifyLogin(false);
 
+    $address = new Hcode\Model\Address();
+
     $cart = Hcode\Model\Cart::getFromSession();
 
-    $address = new Hcode\Model\Address();
+    if(isset($_GET['zipcode'])){
+
+        $_GET['zipcode'] = $cart->getdeszipcode();
+
+        $address->loadFromCEP($_GET['zipcode']);
+
+        $cart->setdeszipcode($_GET['zipcode']);
+
+        $cart->save();
+
+        $cart->getCalculateTotal();
+    }
+
+    if(!$address->getdesaddress()) $address->setdesaddress("");
+    if(!$address->getdescomplement()) $address->setdescomplement("");
+    if(!$address->getdesdistrict()) $address->setdesdistrict("");
+    if(!$address->getdescity()) $address->setdescity("");
+    if(!$address->getdesstate()) $address->setdesstate("");
+    if(!$address->getdescountry()) $address->setdescountry("");
+    if(!$address->getdeszipcode()) $address->setdeszipcode("");
 
     $page = new Hcode\Page();
 
     $page->setTpl("checkout", array(
         "cart" => $cart->getValues(),
-        "address" => $address->getValues()
+        "address" => $address->getValues(),
+        "products" => $cart->getProducts(),
+        "error" => Hcode\Model\Address::getMsgError()
     ));
+});
+
+$app->post("/checkout", function(){
+
+    Hcode\Model\User::verifyLogin(false);
+
+    if(!isset($_POST['zipcode']) || empty($_POST['zipcode'])){
+
+        Hcode\Model\Address::setMsgError("Informe o cep");
+
+        header("Location: /phpstore/checkout");
+        exit();
+    }
+
+    if(!isset($_POST['desaddress']) || empty($_POST['desaddress'])){
+
+        Hcode\Model\Address::setMsgError("Informe o endereço");
+
+        header("Location: /phpstore/checkout");
+        exit();
+    }
+
+    if(!isset($_POST['desdistrict']) || empty($_POST['desdistrict'])){
+
+        Hcode\Model\Address::setMsgError("Informe o bairro");
+
+        header("Location: /phpstore/checkout");
+        exit();
+    }
+
+    if(!isset($_POST['descity']) || empty($_POST['descity'])){
+
+        Hcode\Model\Address::setMsgError("Informe a cidade");
+
+        header("Location: /phpstore/checkout");
+        exit();
+    }
+
+    if(!isset($_POST['desstate']) || empty($_POST['desstate'])){
+
+        Hcode\Model\Address::setMsgError("Informe o estado");
+
+        header("Location: /phpstore/checkout");
+        exit();
+    }
+
+    if(!isset($_POST['descountry']) || empty($_POST['descountry'])){
+
+        Hcode\Model\Address::setMsgError("Informe o país");
+
+        header("Location: /phpstore/checkout");
+        exit();
+    }
+
+    $user = Hcode\Model\User::getFromSession();
+
+    $address = new Hcode\Model\Address();
+
+    $_POST['deszipcode'] = $_POST['zipcode'];
+    $_POST['idperson'] = $user->getidperson();
+
+    $address->setData($_POST);
+
+    $address->save();
+
+    header("Location: /phpstore/order");
+    exit();
 });
 
 $app->get("/login", function(){
