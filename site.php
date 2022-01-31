@@ -557,3 +557,66 @@ $app->get("/profile/orders/:idorder", function($id_order){
         "products" => $cart->getProducts()
     ));
 });
+
+$app->get("/profile/change-password", function(){
+
+    Hcode\Model\User::verifyLogin(false);
+
+    $page = new Hcode\Page();
+
+    $page->setTpl("profile-change-password", array(
+        "changePassError" => Hcode\Model\User::getError(),
+        "changePassSuccess" => Hcode\Model\User::getSuccess()
+    ));
+});
+
+$app->post("/profile/change-password", function(){
+
+    Hcode\Model\User::verifyLogin(false);
+
+    if(!isset($_POST['current_pass']) || empty($_POST['current_pass'])){
+
+        Hcode\Model\User::setError("Digite a senha atual");
+        header("Location: /phpstore/profile/change-password");
+        exit();
+    }
+
+    if(!isset($_POST['new_pass']) || empty($_POST['new_pass'])){
+
+        Hcode\Model\User::setError("Digite a nova senha");
+        header("Location: /phpstore/profile/change-password");
+        exit();
+    }
+
+    if(!isset($_POST['new_pass_confirm']) || empty($_POST['new_pass_confirm'])){
+
+        Hcode\Model\User::setError("Confirme a nova senha");
+        header("Location: /phpstore/profile/change-password");
+        exit();
+    }
+
+    if($_POST['current_pass'] === $_POST['new_pass_confirm']){
+
+        Hcode\Model\User::setError("Para mudar, escolha uma senha diferente da atual");
+        header("Location: /phpstore/profile/change-password");
+        exit();
+    }
+
+    $user = Hcode\Model\User::getFromSession();
+
+    if(!password_verify($_POST['current_pass'], $user->getdespassword())){
+
+        Hcode\Model\User::setError("Senha inválida");
+        header("Location: /phpstore/profile/change-password");
+        exit();
+    }
+
+    $user->setdespassword($_POST['new_pass']);
+
+    $user->update();
+
+    Hcode\Model\User::setSuccess("Senha alterada com sucesso");
+    
+    header("Location: /phpstore/profile/change-password");
+    exit();
+});
