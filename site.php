@@ -521,3 +521,39 @@ $app->get("/boleto/:idorder", function($id_order){
     require_once($path . "funcoes_itau.php");
     require_once($path . "layout_itau.php");
 });
+
+$app->get("/profile/orders", function(){
+
+    Hcode\Model\User::verifyLogin(false);
+
+    $user = Hcode\Model\User::getFromSession();
+
+    $page = new Hcode\Page();
+
+    $page->setTpl("profile-orders", array(
+        "orders" => $user->getOrders()
+    ));
+});
+
+$app->get("/profile/orders/:idorder", function($id_order){
+
+    Hcode\Model\User::verifyLogin(false);
+
+    $order = new Hcode\Model\Order();
+
+    $order->get((int) $id_order);
+
+    $cart = new \Hcode\Model\Cart();
+
+    $cart->get((int) $order->getidcart());
+
+    $cart->getCalculateTotal();
+
+    $page = new Hcode\Page();
+
+    $page->setTpl("profile-orders-detail", array(
+        "order" => $order->getValues(),
+        "cart" => $cart->getValues(),
+        "products" => $cart->getProducts()
+    ));
+});
