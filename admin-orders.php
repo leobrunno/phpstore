@@ -14,6 +14,50 @@ $app->get("/admin/orders/:idorder/delete", function($id_order){
     exit();
 });
 
+$app->get("/admin/orders/:idorder/status", function($id_order){
+
+    Hcode\Model\User::verifyLogin();
+
+    $order = new Hcode\Model\Order();
+
+    $order->get((int) $id_order);
+
+    $page = new Hcode\PageAdmin();
+
+    $page->setTpl("order-status", array(
+        "order" => $order->getValues(),
+        "status" => Hcode\Model\OrderStatus::listAll(),
+        "msgError" => Hcode\Model\Order::getError(),
+        "msgSuccess" => Hcode\Model\Order::getSuccess()
+    ));
+});
+
+$app->post("/admin/orders/:idorder/status", function($id_order){
+
+    Hcode\Model\User::verifyLogin();
+
+    if(!isset($_POST['idstatus']) || !(int) $_POST['idstatus'] > 0){
+
+        Hcode\Model\Order::setError("Informe um status valido");
+        
+        header("Location: /phpstore/admin/orders/".$id_order."/status");
+        exit();
+    }
+
+    $order = new Hcode\Model\Order();
+
+    $order->get((int) $id_order);
+
+    $order->setidstatus((int) $_POST['idstatus']);
+
+    $order->save();
+
+    Hcode\Model\Order::setSuccess("Status atualizado com sucesso");
+
+    header("Location: /phpstore/admin/orders/".$id_order."/status");
+    exit();
+});
+
 $app->get("/admin/orders/:idorder", function($id_order){
 
     Hcode\Model\User::verifyLogin();

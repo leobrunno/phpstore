@@ -9,6 +9,9 @@
     class Order extends Model
     {
 
+        const ERROR = "Order-Error";
+        const SUCCESS = "Order-Success";
+
        public function save()
        {
            $sql = new Sql();
@@ -82,5 +85,43 @@
 
            return $cart;
        }
+
+       public static function setError($msg)
+        {
+            $_SESSION[Order::ERROR] = $msg;
+        }
+
+        public static function getError()
+        {
+            $msg = (isset($_SESSION[Order::ERROR]) && ($_SESSION[Order::ERROR])) ? $_SESSION[Order::ERROR] : "";
+
+            Order::clearError();
+
+            return $msg;
+        }
+
+        public static function clearError()
+        {
+            $_SESSION[Order::ERROR] = NULL;
+        }
+
+        public static function setSuccess($msg)
+        {
+            $_SESSION[Order::SUCCESS] = $msg;
+        }
+
+        public static function getSuccess()
+        {
+            $msg = (isset($_SESSION[Order::SUCCESS]) && ($_SESSION[Order::SUCCESS])) ? $_SESSION[Order::SUCCESS] : "";
+
+            Order::clearSuccess();
+
+            return $msg;
+        }
+
+        public static function clearSuccess()
+        {
+            $_SESSION[Order::SUCCESS] = NULL;
+        }
     }
 ?>
