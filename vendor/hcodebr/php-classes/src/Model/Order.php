@@ -4,6 +4,7 @@
 
     use \Hcode\DB\Sql;
     use \Hcode\Model;
+    use \Hcode\Model\Cart;
 
     class Order extends Model
     {
@@ -71,6 +72,15 @@
            $sql->query("DELETE FROM tb_orders WHERE idorder = :idorder", array(
                ":idorder" => $this->getidorder()
            ));
+       }
+
+       public function getCart():Cart
+       {
+           $cart = new Cart();
+
+           $cart->get((int) $this->getidcart());
+
+           return $cart;
        }
     }
 ?>
