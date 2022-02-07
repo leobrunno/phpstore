@@ -81,9 +81,35 @@ $app->get("/admin/orders", function(){
 
     Hcode\Model\User::verifyLogin();
 
+    $search = (isset($_GET['search'])) ? $_GET['search'] : "";
+    $page = (isset($_GET['page'])) ? (int) $_GET['page'] : 1;
+
+    if(!empty($search)){
+
+        $pagination = Hcode\Model\Order::getPageSearch($search, $page);
+    } else {
+
+        $pagination = Hcode\Model\Order::getPage($page);
+    }
+
+    $pages = array();
+
+    for ($i=0; $i < $pagination['pages']; $i++) { 
+        
+        array_push($pages, array(
+            "href" => "/phpstore/admin/orders?".http_build_query(array(
+                "page" => $i + 1,
+                "search" => $search
+            )),
+            "text" => $i + 1
+        ));
+    }
+
     $page = new Hcode\PageAdmin();
 
     $page->setTpl("orders", array(
-        "orders" => Hcode\Model\Order::listAll()
+        "orders" => $pagination['data'],
+        "search" => $search,
+        "pages" => $pages
     ));
 });
