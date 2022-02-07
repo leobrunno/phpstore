@@ -7,12 +7,36 @@ use \Hcode\Model\Category;
 $app->get("/admin/categories", function () {
     User::verifyLogin();
 
+    $search = (isset($_GET['search'])) ? $_GET['search'] : "";
+    $page = (isset($_GET['page'])) ? (int) $_GET['page'] : 1;
+
+    if(!empty($search)){
+
+        $pagination = Category::getPageSearch($search, $page);
+    } else {
+
+        $pagination = Category::getPage($page);
+    }
+
+    $pages = array();
+
+    for ($i=0; $i < $pagination['pages']; $i++) { 
+        
+        array_push($pages, array(
+            "href" => "/phpstore/admin/users?".http_build_query(array(
+                "page" => $i + 1,
+                "search" => $search
+            )),
+            "text" => $i + 1
+        ));
+    }
+
     $page = new Hcode\PageAdmin();
 
-    $categories = Category::listAll();
-
     $page->setTpl("categories", array(
-        "categories" => $categories
+        "categories" => $pagination['data'],
+        "search" => $search,
+        "pages" => $pages
     ));
 });
 

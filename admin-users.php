@@ -18,7 +18,6 @@ $app->get('/admin/users', function () {
         $pagination = User::getPage($page);
     }
 
-
     $pages = array();
 
     for ($i=0; $i < $pagination['pages']; $i++) { 

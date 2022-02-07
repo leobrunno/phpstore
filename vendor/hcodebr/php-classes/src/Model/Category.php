@@ -135,4 +135,44 @@
                 ":idproduct" => $product->getidproduct()
             ));
         }
+
+        public static function getPage($page = 1, $itemsPerPage = 10)
+        {
+            $start = ($page-1)*$itemsPerPage;
+
+            $sql = new Sql();
+
+            $results = $sql->select(
+                "SELECT SQL_CALC_FOUND_ROWS * FROM tb_categories ORDER BY tb_categories.idcategory DESC
+                LIMIT $start, $itemsPerPage");
+
+            $resultTotal = $sql->select("SELECT found_rows() AS nrtotal");
+
+            return array(
+                "data" => $results,
+                "total" => (int)$resultTotal[0]["nrtotal"],
+                "pages" => ceil($resultTotal[0]["nrtotal"] / $itemsPerPage)
+            );
+        }
+
+        public static function getPageSearch($search, $page, $itemsPerPage = 10)
+        {
+            $start = ($page-1)*$itemsPerPage;
+
+            $sql = new Sql();
+
+            $results = $sql->select(
+                "SELECT SQL_CALC_FOUND_ROWS * FROM tb_categories WHERE descategory LIKE :search_like ORDER BY tb_categories.idcategory DESC
+                LIMIT $start, $itemsPerPage", array(
+                    ":search_like" => "%".$search."%"
+                ));
+
+            $resultTotal = $sql->select("SELECT found_rows() AS nrtotal");
+
+            return array(
+                "data" => $results,
+                "total" => (int)$resultTotal[0]["nrtotal"],
+                "pages" => ceil($resultTotal[0]["nrtotal"] / $itemsPerPage)
+            );
+        }
     }
