@@ -3,6 +3,61 @@
 
 use \Hcode\Model\User;
 
+$app->get('/admin/users/:iduser/password', function ($id_user) {
+
+    User::verifyLogin();
+
+    $user = new User();
+
+    $user->get((int) $id_user);
+
+    $page = new Hcode\PageAdmin();
+
+    $page->setTpl("users-password", array(
+        "user" => $user->getValues(),
+        "msgError" => User::getError(),
+        "msgSuccess" => User::getSuccess()
+    ));
+});
+
+$app->post('/admin/users/:iduser/password', function ($id_user) {
+
+    User::verifyLogin();
+
+    if(!isset($_POST['despassword']) || empty($_POST['despassword'])){
+
+        User::setError("Preencha a nova senha");
+        header("Location: /phpstore/admin/users/$id_user/password");
+        exit();
+    }
+
+    if(!isset($_POST['despassword-confirm']) || empty($_POST['despassword-confirm'])){
+
+        User::setError("Preencha o campo de confirmação para nova senha");
+        header("Location: /phpstore/admin/users/$id_user/password");
+        exit();
+    }
+
+    if($_POST['despassword'] !== $_POST['despassword-confirm']){
+
+        User::setError("As senhas não conferem");
+        header("Location: /phpstore/admin/users/$id_user/password");
+        exit();
+    }
+
+    $user = new User();
+
+    $user->get((int) $id_user);
+
+    $user->setPassword(User::getPasswordHash($_POST['despassword']));
+
+    $page = new Hcode\PageAdmin();
+
+    User::setSuccess("Senha alterada com sucesso");
+    header("Location: /phpstore/admin/users/$id_user/password");
+    exit();
+});
+
 $app->get('/admin/users', function () {
 
     User::verifyLogin();

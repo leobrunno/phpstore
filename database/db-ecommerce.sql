@@ -99,6 +99,38 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_categories_save` (`pidcategory` 
     
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_orders_save` (`pidorder` INT, `pidcart` INT(11), `piduser` INT(11), `pidstatus` INT(11), `pidaddress` INT(11), `pvltotal` DECIMAL(10,2))  BEGIN
+	
+	IF pidorder > 0 THEN
+		
+		UPDATE tb_orders
+        SET
+			idcart = pidcart,
+            iduser = piduser,
+            idstatus = pidstatus,
+            idaddress = pidaddress,
+            vltotal = pvltotal
+		WHERE idorder = pidorder;
+        
+    ELSE
+    
+		INSERT INTO tb_orders (idcart, iduser, idstatus, idaddress, vltotal)
+        VALUES(pidcart, piduser, pidstatus, pidaddress, pvltotal);
+		
+		SET pidorder = LAST_INSERT_ID();
+        
+    END IF;
+    
+    SELECT * 
+    FROM tb_orders a
+    INNER JOIN tb_ordersstatus b USING(idstatus)
+    INNER JOIN tb_carts c USING(idcart)
+    INNER JOIN tb_users d ON d.iduser = a.iduser
+    INNER JOIN tb_addresses e USING(idaddress)
+    WHERE idorder = pidorder;
+    
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_products_save` (`pidproduct` INT(11), `pdesproduct` VARCHAR(64), `pvlprice` DECIMAL(10,2), `pvlwidth` DECIMAL(10,2), `pvlheight` DECIMAL(10,2), `pvllength` DECIMAL(10,2), `pvlweight` DECIMAL(10,2), `pdesurl` VARCHAR(128))  BEGIN
 	
 	IF pidproduct > 0 THEN
@@ -164,15 +196,27 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_usersupdate_save` (`piduser` INT
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_users_delete` (`piduser` INT)  BEGIN
-  
+    
     DECLARE vidperson INT;
     
-  SELECT idperson INTO vidperson
+    SET FOREIGN_KEY_CHECKS = 0;
+	
+	SELECT idperson INTO vidperson
     FROM tb_users
     WHERE iduser = piduser;
+	
+    DELETE FROM tb_addresses WHERE idperson = vidperson;
+    DELETE FROM tb_addresses WHERE idaddress IN(SELECT idaddress FROM tb_orders WHERE iduser = piduser);
+	DELETE FROM tb_persons WHERE idperson = vidperson;
     
+    DELETE FROM tb_userslogs WHERE iduser = piduser;
+    DELETE FROM tb_userspasswordsrecoveries WHERE iduser = piduser;
+    DELETE FROM tb_orders WHERE iduser = piduser;
+    DELETE FROM tb_cartsproducts WHERE idcart IN(SELECT idcart FROM tb_carts WHERE iduser = piduser);
+    DELETE FROM tb_carts WHERE iduser = piduser;
     DELETE FROM tb_users WHERE iduser = piduser;
-    DELETE FROM tb_persons WHERE idperson = vidperson;
+    
+    SET FOREIGN_KEY_CHECKS = 1;
     
 END$$
 
@@ -212,8 +256,6 @@ CREATE TABLE `tb_addresses` (
   `desdistrict` varchar(32) NOT NULL,
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
 
 --
 -- Estrutura da tabela `tb_carts`
@@ -260,11 +302,10 @@ CREATE TABLE `tb_orders` (
   `idcart` int(11) NOT NULL,
   `iduser` int(11) NOT NULL,
   `idstatus` int(11) NOT NULL,
+  `idaddress` int(11) NOT NULL,
   `vltotal` decimal(10,2) NOT NULL,
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
 
 --
 -- Estrutura da tabela `tb_ordersstatus`
@@ -281,10 +322,10 @@ CREATE TABLE `tb_ordersstatus` (
 --
 
 INSERT INTO `tb_ordersstatus` (`idstatus`, `desstatus`, `dtregister`) VALUES
-(1, 'Em Aberto', '2017-03-13 06:00:00'),
-(2, 'Aguardando Pagamento', '2017-03-13 06:00:00'),
-(3, 'Pago', '2017-03-13 06:00:00'),
-(4, 'Entregue', '2017-03-13 06:00:00');
+(1, 'Em Aberto', '2021-01-13 06:00:00'),
+(2, 'Aguardando Pagamento', '2021-01-13 06:00:00'),
+(3, 'Pago', '2021-01-13 06:00:00'),
+(4, 'Entregue', '2021-01-13 06:00:00');
 
 -- --------------------------------------------------------
 
@@ -299,6 +340,15 @@ CREATE TABLE `tb_persons` (
   `nrphone` bigint(20) DEFAULT NULL,
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Extraindo dados da tabela `tb_persons`
+--
+
+INSERT INTO `tb_persons` (`idperson`, `desperson`, `desemail`, `nrphone`, `dtregister`) VALUES
+(1, 'Leonardo Brunno', 'leobrunno@email.com', 84999999999, '2021-07-26 00:13:56'),
+
+-- --------------------------------------------------------
 
 --
 -- Estrutura da tabela `tb_products`
@@ -337,6 +387,13 @@ CREATE TABLE `tb_users` (
   `inadmin` tinyint(4) NOT NULL DEFAULT 0,
   `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Extraindo dados da tabela `tb_users`
+--
+
+INSERT INTO `tb_users` (`iduser`, `idperson`, `deslogin`, `despassword`, `inadmin`, `dtregister`) VALUES
+(1, 1, 'leobrunno27', '$2y$12$A.QrCpSaPK8Vd0arpInolucA4F.5u7Jt6lL3JuNpQQCecQzP3rfvO', 1, '2021-07-27 01:44:39')
 
 --
 -- Estrutura da tabela `tb_userslogs`
@@ -404,9 +461,10 @@ ALTER TABLE `tb_categories`
 --
 ALTER TABLE `tb_orders`
   ADD PRIMARY KEY (`idorder`),
-  ADD KEY `FK_orders_carts_idx` (`idcart`),
   ADD KEY `FK_orders_users_idx` (`iduser`),
-  ADD KEY `fk_orders_ordersstatus_idx` (`idstatus`);
+  ADD KEY `fk_orders_ordersstatus_idx` (`idstatus`),
+  ADD KEY `fk_orders_carts_idx` (`idcart`),
+  ADD KEY `fk_orders_addresses_idx` (`idaddress`);
 
 --
 -- Índices para tabela `tb_ordersstatus`
@@ -462,7 +520,7 @@ ALTER TABLE `tb_userspasswordsrecoveries`
 -- AUTO_INCREMENT de tabela `tb_addresses`
 --
 ALTER TABLE `tb_addresses`
-  MODIFY `idaddress` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `idaddress` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de tabela `tb_carts`
@@ -474,7 +532,7 @@ ALTER TABLE `tb_carts`
 -- AUTO_INCREMENT de tabela `tb_cartsproducts`
 --
 ALTER TABLE `tb_cartsproducts`
-  MODIFY `idcartproduct` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `idcartproduct` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT de tabela `tb_categories`
@@ -486,7 +544,7 @@ ALTER TABLE `tb_categories`
 -- AUTO_INCREMENT de tabela `tb_orders`
 --
 ALTER TABLE `tb_orders`
-  MODIFY `idorder` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `idorder` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `tb_ordersstatus`
@@ -498,7 +556,7 @@ ALTER TABLE `tb_ordersstatus`
 -- AUTO_INCREMENT de tabela `tb_persons`
 --
 ALTER TABLE `tb_persons`
-  MODIFY `idperson` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `idperson` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `tb_products`
@@ -510,7 +568,7 @@ ALTER TABLE `tb_products`
 -- AUTO_INCREMENT de tabela `tb_users`
 --
 ALTER TABLE `tb_users`
-  MODIFY `iduser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `iduser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `tb_userslogs`
@@ -551,6 +609,7 @@ ALTER TABLE `tb_cartsproducts`
 -- Limitadores para a tabela `tb_orders`
 --
 ALTER TABLE `tb_orders`
+  ADD CONSTRAINT `fk_orders_addresses` FOREIGN KEY (`idaddress`) REFERENCES `tb_addresses` (`idaddress`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_orders_carts` FOREIGN KEY (`idcart`) REFERENCES `tb_carts` (`idcart`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_orders_ordersstatus` FOREIGN KEY (`idstatus`) REFERENCES `tb_ordersstatus` (`idstatus`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_orders_users` FOREIGN KEY (`iduser`) REFERENCES `tb_users` (`iduser`) ON DELETE NO ACTION ON UPDATE NO ACTION;
