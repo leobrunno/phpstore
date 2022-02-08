@@ -24,7 +24,7 @@ DELIMITER $$
 --
 -- Procedimentos
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_addresses_save` (`pidaddress` INT(11), `pidperson` INT(11), `pdesaddress` VARCHAR(128), `pdescomplement` VARCHAR(32), `pdescity` VARCHAR(32), `pdesstate` VARCHAR(32), `pdescountry` VARCHAR(32), `pdeszipcode` CHAR(8), `pdesdistrict` VARCHAR(32))  BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_addresses_save` (`pidaddress` INT(11), `pidperson` INT(11), `pdesaddress` VARCHAR(128), `pdesnumber` VARCHAR(16), `pdescomplement` VARCHAR(32), `pdescity` VARCHAR(32), `pdesstate` VARCHAR(32), `pdescountry` VARCHAR(32), `pdeszipcode` CHAR(8), `pdesdistrict` VARCHAR(32))  BEGIN
 
 	IF pidaddress > 0 THEN
 		
@@ -32,6 +32,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_addresses_save` (`pidaddress` IN
         SET
 			idperson = pidperson,
             desaddress = pdesaddress,
+            desnumber = pdesnumber,
             descomplement = pdescomplement,
             descity = pdescity,
             desstate = pdesstate,
@@ -42,8 +43,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_addresses_save` (`pidaddress` IN
         
     ELSE
 		
-		INSERT INTO tb_addresses (idperson, desaddress, descomplement, descity, desstate, descountry, deszipcode, desdistrict)
-        VALUES(pidperson, pdesaddress, pdescomplement, pdescity, pdesstate, pdescountry, pdeszipcode, pdesdistrict);
+		INSERT INTO tb_addresses (idperson, desaddress, desnumber, descomplement, descity, desstate, descountry, deszipcode, desdistrict)
+        VALUES(pidperson, pdesaddress, pdesnumber, pdescomplement, pdescity, pdesstate, pdescountry, pdeszipcode, pdesdistrict);
         
         SET pidaddress = LAST_INSERT_ID();
         
@@ -248,6 +249,7 @@ CREATE TABLE `tb_addresses` (
   `idaddress` int(11) NOT NULL,
   `idperson` int(11) NOT NULL,
   `desaddress` varchar(128) NOT NULL,
+  `desnumber` varchar(16) NOT NULL,
   `descomplement` varchar(32) DEFAULT NULL,
   `descity` varchar(32) NOT NULL,
   `desstate` varchar(32) NOT NULL,
@@ -520,7 +522,7 @@ ALTER TABLE `tb_userspasswordsrecoveries`
 -- AUTO_INCREMENT de tabela `tb_addresses`
 --
 ALTER TABLE `tb_addresses`
-  MODIFY `idaddress` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `idaddress` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de tabela `tb_carts`
