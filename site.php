@@ -238,7 +238,9 @@ $app->post("/checkout", function(){
 
     $order->save();
 
-    header("Location: /phpstore/order/".$order->getidorder());
+    $order->toSession();
+
+    header("Location: /phpstore/payment");
     exit();
 });
 

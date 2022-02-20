@@ -11,6 +11,7 @@
 
         const ERROR = "Order-Error";
         const SUCCESS = "Order-Success";
+        const SESSION = "OrderSession";
 
        public function save()
        {
@@ -178,6 +179,16 @@
                 "total" => (int)$resultTotal[0]["nrtotal"],
                 "pages" => ceil($resultTotal[0]["nrtotal"] / $itemsPerPage)
             );
+        }
+
+        public function toSession()
+        {
+            $_SESSION[Order::SESSION] = $this->getValues();
+        }
+
+        public function getFromSession()
+        {
+            $this->setData($_SESSION[Order::SESSION]);
         }
     }
 ?>
