@@ -263,11 +263,11 @@
 </script>
 
 <script id="tpl-installment-free" type="text/x-handlebars-template">
-    <option>{{quantity}}x de R${{installmentAmount}} sem juros</option>
+    <option>{{quantity}}x de {{installmentAmount}} sem juros</option>
 </script>
 
 <script id="tpl-installment" type="text/x-handlebars-template">
-    <option>{{quantity}}x de R${{installmentAmount}} com juros (R${{totalAmount}})</option>
+    <option>{{quantity}}x de {{installmentAmount}} com juros ({{totalAmount}})</option>
 </script>
 
 <script src="{$pagseguro.urlJS}"></script>
@@ -341,6 +341,64 @@
                     success: function(response) {
 
                         $("#brand_field").val(response.brand.name);
+
+                        PagSeguroDirectPayment.getInstallments({
+                            amount: parseFloat("{$order.vltotal}"),
+                            maxInstallmentNoInterest: parseInt("{$pagseguro.maxInstallmentNoInterest}"),
+                            brand: response.brand.name,
+                            success: function(response){
+
+                                $("#installments_field").html('<option disabled="disabled"></option>');
+
+                                var tplInstallmentFree = Handlesbars.compile($("#tpl-installment-free").html());
+                                var tplInstallment = Handlesbars.compile($("#tpl-installment").html());
+
+                                var formatReal = {
+                                    minimumFractionDigits: 2,
+                                    style: "currency",
+                                    currency: "BRL"
+                                }
+
+                                $.each(response.installments[$("#brand_field").val()], function(index, intallment){
+
+                                    if(parseInt("{$pagseguro.maxInstallment}") > index){
+
+                                        if(installment.interestFree === true){
+
+                                            var $option = $(tplInstallmentFree({
+                                                quantity: installment.quantity,
+                                                installmentAmount: installment.installmentAmount.toLocaleString('pt-BR', formatReal)
+                                            }));
+                                        } else {
+
+                                            var $option = $(tplInstallment({
+                                                quantity: installment.quantity,
+                                                installmentAmount: installment.installmentAmount.toLocaleString('pt-BR', formatReal),
+                                                totalAmount: installment.totalAmount.toLocaleString('pt-BR', formatReal)
+                                            }));
+                                        }
+
+                                        $option.data("installment", installment);
+
+                                        $("#installments_field").append($option);
+                                    }
+                                });
+                            },
+                            error: function(response) {
+
+                                var errors = [];
+
+                                for(var code in response.errors){
+
+                                    error.push(response.errors[code]);
+                                }
+
+                                showError(errors.toString());
+                            },
+                            complete: function(response){
+
+                            }
+                        });
 
                     },
                     error: function(response) {

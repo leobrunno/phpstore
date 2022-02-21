@@ -29,7 +29,9 @@ $app->get("/payment", function(){
         "years" => $years,
         "pagseguro" => array(
             "urlJS" => Config::getUrlJS(),
-            "id" => Transporter::createSession() 
+            "id" => Transporter::createSession(),
+            "maxInstallmentNoInterest" => Config::MAX_INTALLMENT_NO_INTEREST,
+            "maxInstallment" => Config::MAX_INTALLMENT
         )
     ));
 });
