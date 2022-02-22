@@ -6,6 +6,19 @@ use \Hcode\Model\User;
 use \Hcode\Model\Order;
 use \Hcode\PagSeguro\Transporter;
 
+$app->post("/payment/credit", function(){
+
+    User::verifyLogin(false);
+
+    $order = new Order();
+
+    $order->getFromSession();
+
+    $address = $order->getAdress();
+
+    $cart = $order->getCart();
+});
+
 $app->get("/payment", function(){
 
     User::verifyLogin(false);

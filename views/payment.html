@@ -483,7 +483,16 @@
                 expirationMonth: params.month,
                 expirationYear: params.year,
                 success: function(response) {
+                    params.token = response.card.token;
+                    params.hash = PagSeguroDirectPayment.getSenderHash();
                     
+                    $.post(
+                        "/phpstore/payment/credit",
+                        $.param(params),
+                        function(r){
+
+                        }
+                    )
                 },
                 error: function(response) {
                     var errors = [];
