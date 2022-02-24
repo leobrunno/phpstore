@@ -43,8 +43,8 @@ $app->get("/payment", function(){
         "pagseguro" => array(
             "urlJS" => Config::getUrlJS(),
             "id" => Transporter::createSession(),
-            "maxInstallmentNoInterest" => Config::MAX_INTALLMENT_NO_INTEREST,
-            "maxInstallment" => Config::MAX_INTALLMENT
+            "maxInstallmentNoInterest" => Config::MAX_INSTALLMENT_NO_INTEREST,
+            "maxInstallment" => Config::MAX_INSTALLMENT
         )
     ));
 });

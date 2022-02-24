@@ -18,8 +18,8 @@
         const SANDBOX_URL_JS = "https://stc.sandbox.pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js"; 
         const PRODUCTION_URL_JS = "";
 
-        const MAX_INTALLMENT_NO_INTEREST = 10;
-        const MAX_INTALLMENT = 12;
+        const MAX_INSTALLMENT_NO_INTEREST = 10;
+        const MAX_INSTALLMENT = 12;
 
         public static function getAuthentication():array
         {
