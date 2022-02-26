@@ -21,6 +21,8 @@
         const MAX_INSTALLMENT_NO_INTEREST = 10;
         const MAX_INSTALLMENT = 12;
 
+        const NOTIFICATION_URL = "http://www.phpstore.com/payment/notification";
+
         public static function getAuthentication():array
         {
             if(Config::SANDBOX === true){
