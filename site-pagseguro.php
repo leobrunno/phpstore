@@ -90,6 +90,10 @@ $app->post("/payment/credit", function(){
     }
 
     $payment->setCreditCard($creditCard);
+
+    Transporter::sendTransaction($payment);
+
+    echo json_encode(array("success" => true));
 });
 
 $app->get("/payment", function(){

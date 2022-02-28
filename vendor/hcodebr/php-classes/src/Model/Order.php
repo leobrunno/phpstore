@@ -200,5 +200,21 @@
 
             return $address;
         }
+
+        public function setPagSeguroTransactionResponse(string $descode, float $vlgrossamount, float $vldiscountamount, float $vlfeeamount, float $vlnetamount, float $extraamount, string $despaymentlink = "")
+        {
+            $sql = new Sql();
+
+            $sql->query("CALL sp_orderspagseguro_save(:idorder, :descode, :vlgrossamount, :vldiscountamount, :vlfeeamount, :vlnetamount, :vlextraamount, :despaymentlink)", array(
+                ":idorder" => $this->getidorder(),
+                ":descode" => $descode,
+                ":vlgrossamount" => $vlgrossamount,
+                ":vldiscountamount" => $vldiscountamount,
+                ":vlfeeamount" => $vlfeeamount,
+                ":vlnetamount" => $vlnetamount,
+                ":vlextraamount" => $extraamount,
+                ":despaymentlink" => $despaymentlink
+            ));
+        }
     }
 ?>

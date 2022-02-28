@@ -1,10 +1,9 @@
 -- phpMyAdmin SQL Dump
--- version 5.0.2
+-- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Versão do servidor: 10.4.14-MariaDB
--- versão do PHP: 7.4.10
+-- versão do PHP: 7.4.27
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -56,20 +55,20 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_carts_save` (`pidcart` INT, `pdessessionid` VARCHAR(64), `piduser` INT, `pdeszipcode` CHAR(8), `pvlfreight` DECIMAL(10,2), `pnrdays` INT)  BEGIN
 
-    IF pidcart > 0 THEN
-        
-        UPDATE tb_carts
+	IF pidcart > 0 THEN
+		
+		UPDATE tb_carts
         SET
-            dessessionid = pdessessionid,
+			dessessionid = pdessessionid,
             iduser = piduser,
             deszipcode = pdeszipcode,
             vlfreight = pvlfreight,
-            nrdays = pnrdays
-        WHERE idcart = pidcart;
+			nrdays = pnrdays
+		WHERE idcart = pidcart;
         
     ELSE
-        
-        INSERT INTO tb_carts (dessessionid, iduser, deszipcode, vlfreight, nrdays)
+		
+		INSERT INTO tb_carts (dessessionid, iduser, deszipcode, vlfreight, nrdays)
         VALUES(pdessessionid, piduser, pdeszipcode, pvlfreight, pnrdays);
         
         SET pidcart = LAST_INSERT_ID();
@@ -97,6 +96,15 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_categories_save` (`pidcategory` 
     END IF;
     
     SELECT * FROM tb_categories WHERE idcategory = pidcategory;
+    
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_orderspagseguro_save` (`pidorder` INT, `pdescode` VARCHAR(36), `pvlgrossamount` DECIMAL(10,2), `pvldiscountamount` DECIMAL(10,2), `pvlfeeamount` DECIMAL(10,2), `pvlnetamount` DECIMAL(10,2), `pvlextraamount` DECIMAL(10,2), `pdespaymentlink` VARCHAR(256))  BEGIN
+	
+    DELETE FROM tb_orderspagseguro WHERE idorder = pidorder;
+    
+    INSERT INTO tb_orderspagseguro (idorder, descode, vlgrossamount, vldiscountamount, vlfeeamount, vlnetamount, vlextraamount, despaymentlink)
+	VALUES(pidorder, pdescode, pvlgrossamount, pvldiscountamount, pvlfeeamount, pvlnetamount, pvlextraamount, pdespaymentlink);
     
 END$$
 
@@ -161,8 +169,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_products_save` (`pidproduct` INT
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_userspasswordsrecoveries_create` (`piduser` INT, `pdesip` VARCHAR(45))  BEGIN
-  
-  INSERT INTO tb_userspasswordsrecoveries (iduser, desip)
+	
+	INSERT INTO tb_userspasswordsrecoveries (iduser, desip)
     VALUES(piduser, pdesip);
     
     SELECT * FROM tb_userspasswordsrecoveries
@@ -171,26 +179,26 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_userspasswordsrecoveries_create`
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_usersupdate_save` (`piduser` INT, `pdesperson` VARCHAR(64), `pdeslogin` VARCHAR(64), `pdespassword` VARCHAR(256), `pdesemail` VARCHAR(128), `pnrphone` BIGINT, `pinadmin` TINYINT)  BEGIN
-  
+	
     DECLARE vidperson INT;
     
-  SELECT idperson INTO vidperson
+	SELECT idperson INTO vidperson
     FROM tb_users
     WHERE iduser = piduser;
     
     UPDATE tb_persons
     SET 
-    desperson = pdesperson,
+		desperson = pdesperson,
         desemail = pdesemail,
         nrphone = pnrphone
-  WHERE idperson = vidperson;
+	WHERE idperson = vidperson;
     
     UPDATE tb_users
     SET
-    deslogin = pdeslogin,
+		deslogin = pdeslogin,
         despassword = pdespassword,
         inadmin = pinadmin
-  WHERE iduser = piduser;
+	WHERE iduser = piduser;
     
     SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) WHERE a.iduser = piduser;
     
@@ -222,10 +230,10 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_users_delete` (`piduser` INT)  B
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_users_save` (`pdesperson` VARCHAR(64), `pdeslogin` VARCHAR(64), `pdespassword` VARCHAR(256), `pdesemail` VARCHAR(128), `pnrphone` BIGINT, `pinadmin` TINYINT)  BEGIN
-  
+	
     DECLARE vidperson INT;
     
-  INSERT INTO tb_persons (desperson, desemail, nrphone)
+	INSERT INTO tb_persons (desperson, desemail, nrphone)
     VALUES(pdesperson, pdesemail, pnrphone);
     
     SET vidperson = LAST_INSERT_ID();
@@ -310,6 +318,22 @@ CREATE TABLE `tb_orders` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Estrutura da tabela `tb_orderspagseguro`
+--
+
+CREATE TABLE `tb_orderspagseguro` (
+  `idorder` int(11) NOT NULL,
+  `descode` varchar(36) NOT NULL,
+  `vlgrossamount` decimal(10,2) NOT NULL,
+  `vldiscountamount` decimal(10,2) NOT NULL,
+  `vlfeeamount` decimal(10,2) NOT NULL,
+  `vlnetamount` decimal(10,2) NOT NULL,
+  `vlextraamount` decimal(10,2) NOT NULL,
+  `despaymentlink` varchar(256) DEFAULT NULL,
+  `dtregister` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
 -- Estrutura da tabela `tb_ordersstatus`
 --
 
@@ -324,10 +348,13 @@ CREATE TABLE `tb_ordersstatus` (
 --
 
 INSERT INTO `tb_ordersstatus` (`idstatus`, `desstatus`, `dtregister`) VALUES
-(1, 'Em Aberto', '2021-01-13 06:00:00'),
-(2, 'Aguardando Pagamento', '2021-01-13 06:00:00'),
-(3, 'Pago', '2021-01-13 06:00:00'),
-(4, 'Entregue', '2021-01-13 06:00:00');
+(1, 'Aguardando pagamento', '2017-09-29 14:49:51'),
+(2, 'Em análise', '2017-09-29 14:49:51'),
+(3, 'Paga', '2017-09-29 14:49:51'),
+(4, 'Disponível', '2017-09-29 14:49:51'),
+(5, 'Em disputa', '2017-09-29 14:49:51'),
+(6, 'Devolvida', '2017-09-29 14:49:51'),
+(7, 'Cancelada', '2017-09-29 14:49:51');
 
 -- --------------------------------------------------------
 
@@ -348,7 +375,7 @@ CREATE TABLE `tb_persons` (
 --
 
 INSERT INTO `tb_persons` (`idperson`, `desperson`, `desemail`, `nrphone`, `dtregister`) VALUES
-(1, 'Leonardo Brunno', 'leobrunno@email.com', 84999999999, '2021-07-26 00:13:56'),
+(1, 'Administrador', 'admin@sandbox.pagseguro.com.br', 11912345678, '2022-01-29 14:49:51');
 
 -- --------------------------------------------------------
 
@@ -395,7 +422,9 @@ CREATE TABLE `tb_users` (
 --
 
 INSERT INTO `tb_users` (`iduser`, `idperson`, `deslogin`, `despassword`, `inadmin`, `dtregister`) VALUES
-(1, 1, 'leobrunno27', '$2y$12$A.QrCpSaPK8Vd0arpInolucA4F.5u7Jt6lL3JuNpQQCecQzP3rfvO', 1, '2021-07-27 01:44:39')
+(1, 1, 'admin', '$2y$12$K//3jS6gFYzwDViewONa.uBWmbrxES.3Kl/nTqWUlcazV6Xiej1SK', 1, '2022-01-29 14:49:52');
+
+-- --------------------------------------------------------
 
 --
 -- Estrutura da tabela `tb_userslogs`
@@ -450,7 +479,7 @@ ALTER TABLE `tb_carts`
 ALTER TABLE `tb_cartsproducts`
   ADD PRIMARY KEY (`idcartproduct`),
   ADD KEY `FK_cartsproducts_carts_idx` (`idcart`),
-  ADD KEY `FK_cartsproducts_products_idx` (`idproduct`);
+  ADD KEY `fk_cartsproducts_products_idx` (`idproduct`);
 
 --
 -- Índices para tabela `tb_categories`
@@ -467,6 +496,12 @@ ALTER TABLE `tb_orders`
   ADD KEY `fk_orders_ordersstatus_idx` (`idstatus`),
   ADD KEY `fk_orders_carts_idx` (`idcart`),
   ADD KEY `fk_orders_addresses_idx` (`idaddress`);
+
+--
+-- Índices para tabela `tb_orderspagseguro`
+--
+ALTER TABLE `tb_orderspagseguro`
+  ADD PRIMARY KEY (`idorder`);
 
 --
 -- Índices para tabela `tb_ordersstatus`
@@ -522,55 +557,55 @@ ALTER TABLE `tb_userspasswordsrecoveries`
 -- AUTO_INCREMENT de tabela `tb_addresses`
 --
 ALTER TABLE `tb_addresses`
-  MODIFY `idaddress` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `idaddress` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de tabela `tb_carts`
 --
 ALTER TABLE `tb_carts`
-  MODIFY `idcart` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=138;
+  MODIFY `idcart` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de tabela `tb_cartsproducts`
 --
 ALTER TABLE `tb_cartsproducts`
-  MODIFY `idcartproduct` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `idcartproduct` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de tabela `tb_categories`
 --
 ALTER TABLE `tb_categories`
-  MODIFY `idcategory` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `idcategory` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `tb_orders`
 --
 ALTER TABLE `tb_orders`
-  MODIFY `idorder` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idorder` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de tabela `tb_ordersstatus`
 --
 ALTER TABLE `tb_ordersstatus`
-  MODIFY `idstatus` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `idstatus` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de tabela `tb_persons`
 --
 ALTER TABLE `tb_persons`
-  MODIFY `idperson` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `idperson` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de tabela `tb_products`
 --
 ALTER TABLE `tb_products`
-  MODIFY `idproduct` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `idproduct` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de tabela `tb_users`
 --
 ALTER TABLE `tb_users`
-  MODIFY `iduser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `iduser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de tabela `tb_userslogs`
@@ -582,7 +617,7 @@ ALTER TABLE `tb_userslogs`
 -- AUTO_INCREMENT de tabela `tb_userspasswordsrecoveries`
 --
 ALTER TABLE `tb_userspasswordsrecoveries`
-  MODIFY `idrecovery` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `idrecovery` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Restrições para despejos de tabelas
