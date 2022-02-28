@@ -500,6 +500,15 @@
                         $.param(params),
                         function(r){
 
+                            var response = JSON.parse(r);
+
+                            if(response.success){
+
+                                window.location.href = "/phpstore/payment/success"; 
+                            } else {
+
+                                showError("Não foi possível efetuar o pagamento");
+                            }
                         }
                     )
                 },
