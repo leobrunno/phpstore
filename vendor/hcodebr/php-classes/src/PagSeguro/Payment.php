@@ -107,6 +107,10 @@
 
                 case Method::DEBIT:
 
+                    $bank = $this->bank->getDOMElement();
+                    $bank = $dom->importNode($bank, true);
+                    $bank = $payment->appendChild($bank);
+
                 break;
             }
 
