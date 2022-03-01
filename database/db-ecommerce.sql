@@ -374,8 +374,7 @@ CREATE TABLE `tb_persons` (
 -- Extraindo dados da tabela `tb_persons`
 --
 
-INSERT INTO `tb_persons` (`idperson`, `desperson`, `desemail`, `nrphone`, `dtregister`) VALUES
-(1, 'Administrador', 'admin@sandbox.pagseguro.com.br', 11912345678, '2022-01-29 14:49:51');
+INSERT INTO `tb_persons` (`idperson`, `desperson`, `desemail`, `nrphone`, `dtregister`) VALUES (1, 'administrador', 'administrador@sandbox.pagseguro.com.br', '0', '2022-02-28 21:58:36');
 
 -- --------------------------------------------------------
 
@@ -421,8 +420,7 @@ CREATE TABLE `tb_users` (
 -- Extraindo dados da tabela `tb_users`
 --
 
-INSERT INTO `tb_users` (`iduser`, `idperson`, `deslogin`, `despassword`, `inadmin`, `dtregister`) VALUES
-(1, 1, 'admin', '$2y$12$K//3jS6gFYzwDViewONa.uBWmbrxES.3Kl/nTqWUlcazV6Xiej1SK', 1, '2022-01-29 14:49:52');
+INSERT INTO `tb_users` (`iduser`, `idperson`, `deslogin`, `despassword`, `inadmin`, `dtregister`) VALUES (1, '1', 'administrador@sandbox.pagseguro.com.br', '$2y$12$KyeNmMkX6fbW2nk.ObGPHOYg5UCnRlJWVO8prGmtNnKmUZ1ckiHMe', '1', '2022-02-28 21:58:36');
 
 -- --------------------------------------------------------
 
