@@ -23,8 +23,11 @@
 
         const NOTIFICATION_URL = "http://www.phpstore.com/payment/notification";
 
-        const SANDBOX_URL_TRANSACTION = "https://ws.pagseguro.uol.com.br/v2/transactions";
+        const SANDBOX_URL_TRANSACTION = "https://ws.sandbox.pagseguro.uol.com.br/v2/transactions";
         const PRODUCTION_URL_TRANSACTION = "";
+
+        const SANDBOX_URL_NOTIFICATION = "https://ws.sandbox.pagseguro.uol.com.br/v3/transactions/notifications/";
+        const PRODUCTION_URL_NOTIFICATION = "";
 
         public static function getAuthentication():array
         {
@@ -56,6 +59,11 @@
         public static function getUrlTransaction()
         {
             return (Config::SANDBOX === true) ? Config::SANDBOX_URL_TRANSACTION : Config::PRODUCTION_URL_TRANSACTION;
+        }
+
+        public static function getNotificationTransactionURL()
+        {
+            return (Config::SANDBOX === true) ? Config::SANDBOX_URL_NOTIFICATION : Config::PRODUCTION_URL_NOTIFICATION;
         }
         
     }
